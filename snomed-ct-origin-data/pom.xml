@@ -10,9 +10,9 @@
         <relativePath/>
     </parent>
 
-    <groupId>org.example</groupId>
     <artifactId>snomed-ct-origin-data</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
     <properties>
         <!-- maven plugins -->
@@ -20,20 +20,29 @@
         <maven-assembly-plugin.version>3.7.1</maven-assembly-plugin.version>
         <exec-maven-plugin.version>3.4.1</exec-maven-plugin.version>
         <maven-dependency-plugin.version>3.8.0</maven-dependency-plugin.version>
+        <maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
+        <nexus-repository>maven-snapshots</nexus-repository>
 
         <!-- origin -->
         <origin.working.directory>${project.build.directory}/origin-sources</origin.working.directory>
         <source.zip>SnomedCT_InternationalRF2_PRODUCTION_20250101T120000Z.zip</source.zip>
     </properties>
 
+    <distributionManagement>
+        <repository>
+            <id>nexus</id>
+            <url>https://nexus.tinkarbuild.com/repository/${nexus-repository}/</url>
+        </repository>
+    </distributionManagement>
+
     <build>
         <pluginManagement>
             <plugins>
-<!--                <plugin>-->
-<!--                    <groupId>dev.ikm.maven.tinkar</groupId>-->
-<!--                    <artifactId>manifest-maven-plugin</artifactId>-->
-<!--                    <version>${maven-artifacts.version}</version>-->
-<!--                </plugin>-->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>${maven-deploy-plugin.version}</version>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
@@ -49,11 +58,11 @@
                     <artifactId>tinkar-maven-plugin</artifactId>
                     <version>${maven-artifacts.version}</version>
                 </plugin>
-<!--                <plugin>-->
-<!--                    <groupId>org.codehaus.mojo</groupId>-->
-<!--                    <artifactId>exec-maven-plugin</artifactId>-->
-<!--                    <version>${exec-maven-plugin.version}</version>-->
-<!--                </plugin>-->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>${exec-maven-plugin.version}</version>
+                </plugin>
 <!--                <plugin>-->
 <!--                    <groupId>org.apache.maven.plugins</groupId>-->
 <!--                    <artifactId>maven-dependency-plugin</artifactId>-->
@@ -67,6 +76,11 @@
             </plugins>
         </pluginManagement>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.2</version>
+            </plugin>
             <!-- Unzip source data -->
             <plugin>
                 <groupId>dev.ikm.maven.tinkar</groupId>
@@ -167,5 +181,12 @@
         </plugins>
     </build>
 
-
+    <profiles>
+        <profile>
+            <id>nexus-deployment-release</id>
+            <properties>
+                <nexus-repository>maven-releases</nexus-repository>
+            </properties>
+        </profile>
+    </profiles>
 </project>
