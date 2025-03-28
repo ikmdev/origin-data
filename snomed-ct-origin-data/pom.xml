@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>dev.ikm.maven</groupId>
+        <artifactId>origin-data-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+
+    <groupId>dev.ikm.maven.snomedct</groupId>
+    <artifactId>snomedct-origin-pipeline</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <!-- Project Info For OSSRH (Start) -->
+
+    <name>SnomedCT Origin Pipeline</name>
+    <description>SnomedCT Origin Pipeline Project</description>
+    <url>https://www.ikm.dev</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <developers>
+        <!-- OSSRH Related Developer (Start) -->
+        <developer>
+            <id>ikmdev</id>
+            <name>IKM Development Team</name>
+            <email>support@ikm.dev</email>
+        </developer>
+        <!-- OSSRH Related Developer (End) -->
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/ikmdev/origin-data.git</connection>
+        <developerConnection>scm:git:ssh://github.com:ikmdev/origin-data.git</developerConnection>
+        <url>http://www.github.com/ikmdev/origin-data.git</url>
+    </scm>
+
+    <!-- Project Info For OSSRH (End) -->
+
+    <properties>
+        <data-artifact.groupId>dev.ikm.data.snomedct</data-artifact.groupId>
+        <data-artifact.artifactId>snomedct-origin</data-artifact.artifactId>
+        <data-artifact.filename>${data-artifact.path-prefix}-data.zip</data-artifact.filename>
+        <data-artifact.version>${source.zip.classifier.toLowerCase}-${source.zip.version}+${project.version}</data-artifact.version>
+        <data-artifact.prefix>${data-artifact.artifactId}-${data-artifact.version}</data-artifact.prefix>
+        <data-artifact.path-prefix>${project.build.directory}/${data-artifact.prefix}</data-artifact.path-prefix>
+        <deploymentFiles>${project.basedir}/pom.xml</deploymentFiles>
+        <deploymentClassifiers>pipeline</deploymentClassifiers>
+        <deploymentTypes>xml</deploymentTypes>
+    </properties>
+
+
+    <build>
+        <plugins>
+            <!-- Custom install each artifact using a different GAV configuration -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <configuration>
+                    <groupId>${data-artifact.groupId}</groupId>
+                    <artifactId>${data-artifact.artifactId}</artifactId>
+                    <version>${data-artifact.version}</version>
+                    <pomFile>${project.build.directory}/origin-data-pom.xml</pomFile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>install-pipeline-definition</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>${project.basedir}/pom.xml</file>
+                            <classifier>pipeline</classifier>
+                            <packaging>xml</packaging>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Unzip source data -->
+            <plugin>
+                <groupId>dev.ikm.maven.tinkar</groupId>
+                <artifactId>tinkar-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>process-origin</id>
+                        <goals>
+                            <goal>unzip-source</goal>
+                        </goals>
+                        <configuration>
+                            <source>${source.zip.filename}</source>
+                            <outputDirectory>${origin.working.directory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>create-origin-manifest</id>
+                        <goals>
+                            <goal>generate-manifest-resource</goal>
+                        </goals>
+                        <configuration>
+                            <packagerName>${packager.name}</packagerName>
+                            <originVersion>${project.version}</originVersion>
+                            <originURL>${origin.url}</originURL>
+                            <originNamespace>${origin.namespace}</originNamespace>
+                            <outputDirectory>${origin.working.directory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Assemble and zip data into SnomedCT Origin Artifact -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <finalName>${data-artifact.artifactId}-${data-artifact.version}</finalName>
+                    <attach>false</attach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>assemble-origin-artifact</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <inlineDescriptors>
+                                <inlineDescriptor>
+                                    <id>data</id>
+                                    <formats>
+                                        <format>zip</format>
+                                    </formats>
+                                    <fileSets>
+                                        <fileSet>
+                                            <outputDirectory>src</outputDirectory>
+                                            <directory>${origin.working.directory}</directory>
+                                            <includes>
+                                                <include>**</include>
+                                            </includes>
+                                            <excludes>
+                                                <exclude>MANIFEST.MF</exclude>
+                                            </excludes>
+                                        </fileSet>
+                                        <fileSet>
+                                            <outputDirectory>META-INF</outputDirectory>
+                                            <directory>${origin.working.directory}</directory>
+                                            <includes>
+                                                <include>MANIFEST.MF</include>
+                                            </includes>
+                                        </fileSet>
+                                    </fileSets>
+                                    <includeBaseDirectory>false</includeBaseDirectory>
+                                </inlineDescriptor>
+                            </inlineDescriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>generateData</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>templating-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>inject-maven-properties</id>
+                                <goals>
+                                    <goal>filter-sources</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>origin-data-pom-template</sourceDirectory>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <skipPoms>false</skipPoms>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>deploySnapshotDataArtifacts</id>
+            <activation>
+                <property>
+                    <name>repositoryId</name>
+                    <value>!ossrh</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>deploy-snapshot-artifacts</id>
+                                <phase>deploy</phase>
+                                <goals>
+                                    <goal>deploy-file</goal>
+                                </goals>
+                                <configuration>
+                                    <repositoryId>nexus</repositoryId>
+                                    <url>https://nexus.tinkarbuild.com/repository/${nexus-repository}/</url>
+                                    <groupId>${data-artifact.groupId}</groupId>
+                                    <artifactId>${data-artifact.artifactId}</artifactId>
+                                    <version>${data-artifact.version}</version>
+                                    <pomFile>${project.build.directory}/origin-data-pom.xml</pomFile>
+                                    <file>${data-artifact.filename}</file>
+                                    <packaging>zip</packaging>
+                                    <files>${deploymentFiles}</files>
+                                    <classifiers>${deploymentClassifiers}</classifiers>
+                                    <types>${deploymentTypes}</types>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
