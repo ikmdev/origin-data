@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>dev.ikm.tinkar</groupId>
+    <groupId>dev.ikm.maven</groupId>
     <artifactId>origin-data-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -27,7 +27,11 @@
         <origin.url>https://www.nlm.nih.gov/healthit/snomedct/us_edition.html</origin.url>
         <origin.namespace>3094dbd1-60cf-44a6-92e3-0bb32ca4d3de</origin.namespace>
         <origin.working.directory>${project.build.directory}/origin-sources</origin.working.directory>
-        <source.zip>SnomedCT_InternationalRF2_PRODUCTION_20250101T120000Z.zip</source.zip>
+        <source.zip.classifier>International</source.zip.classifier>
+        <source.zip.version>20250101T120000Z</source.zip.version>
+        <source.zip.filename>SnomedCT_${source.zip.classifier}RF2_PRODUCTION_${source.zip.version}.zip</source.zip.filename>
+        <!-- Templating Plugin Version-->
+        <templating-maven-plugin.version>3.0.0</templating-maven-plugin.version>
     </properties>
 
     <distributionManagement>
@@ -60,8 +64,40 @@
                     <artifactId>exec-maven-plugin</artifactId>
                     <version>${exec-maven-plugin.version}</version>
                 </plugin>
+                <!-- Templating Plugin-->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>templating-maven-plugin</artifactId>
+                    <version>${templating-maven-plugin.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
+
+        <plugins>
+            <!-- Use to transform source zip classifier to lowercase -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>lowercase-classifier</id>
+                        <goals>
+                            <goal>regex-property</goal>
+                        </goals>
+                        <phase>validate</phase>
+                        <configuration>
+                            <name>source.zip.classifier.toLowerCase</name>
+                            <value>${source.zip.classifier}</value>
+                            <regex>.</regex>
+                            <replacement>$0</replacement>
+                            <failIfNoMatch>true</failIfNoMatch>
+                            <toLowerCase>true</toLowerCase>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 
     <profiles>
