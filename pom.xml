@@ -28,8 +28,8 @@
         <origin.namespace>3094dbd1-60cf-44a6-92e3-0bb32ca4d3de</origin.namespace>
         <origin.working.directory>${project.build.directory}/origin-sources</origin.working.directory>
         <source.zip.classifier>International</source.zip.classifier>
-        <source.zip.version>20250101T120000Z</source.zip.version>
-        <source.zip.filename>SnomedCT_${source.zip.classifier}RF2_PRODUCTION_${source.zip.version}.zip</source.zip.filename>
+        <source.zip.version>20252803Z</source.zip.version>
+        <source.zip.filename>Test_${source.zip.classifier}RF_TEST_${source.zip.version}.zip</source.zip.filename>
         <!-- Templating Plugin Version-->
         <templating-maven-plugin.version>3.0.0</templating-maven-plugin.version>
     </properties>
